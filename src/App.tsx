@@ -1,20 +1,11 @@
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, FormProvider } from 'react-hook-form'
 import './App.css'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import MaskedInput from 'react-text-mask'
 import { useState } from 'react'
+import { DateInput } from './components/DateInput'
+import { createDateFromBRLFormat } from './utils/date-brl-format'
 
-const DATE_MASK = [/\d/, /\d/, '/', /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/]
-function createDateFromBRLFormat(dateString: string) {
-  const [day, month, year] = dateString.split('/').map(Number)
-  const date = new Date(
-    `${year}-${month.toString().padStart(2, '0')}-${day
-      .toString()
-      .padStart(2, '0')}`,
-  )
-  return date.getTime()
-}
 const schema = z.object({
   fabricattedAt: z.string().refine((arg: string) => {
     if (arg.trim() === '') {
@@ -53,18 +44,14 @@ type FormData = z.infer<typeof schema>
 function App() {
   const [expirationPercentage, setExpirationPercentage] = useState(-1)
   const [deliveryDate, setDeliveryDate] = useState('')
-  const {
-    handleSubmit,
-    formState: { errors },
-    control,
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      fabricattedAt: '',
-      expiresAt: '',
-      deliveryDate: '',
-    },
-  })
+  const form = useForm<FormData>({ resolver: zodResolver(schema) })
+  const { handleSubmit, reset } = form
+
+  function clearData() {
+    reset()
+    setExpirationPercentage(-1)
+    setDeliveryDate('')
+  }
 
   function onSubmit(values: FormData) {
     try {
@@ -88,82 +75,28 @@ function App() {
   }
 
   return (
-    <>
+    <FormProvider {...form}>
       <h1>Calculadora de validade de produtos</h1>
       <div className="container">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="field">
-            <label htmlFor="fabricattedAt">Data de Fabricação</label>
-            <Controller
-              control={control}
-              name={'fabricattedAt'}
-              defaultValue=""
-              render={({ field }) => (
-                <MaskedInput
-                  placeholder="__/__/____"
-                  mask={DATE_MASK}
-                  guide={false}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  id={field.name}
-                  value={field.value}
-                />
-              )}
-            />
-            <span className="error">{errors.expiresAt?.message}</span>
-          </div>
-          <div className="field">
-            <label htmlFor="">Data de Validade</label>
-            <Controller
-              control={control}
-              name={'expiresAt'}
-              defaultValue=""
-              render={({ field }) => (
-                <MaskedInput
-                  placeholder="__/__/____"
-                  mask={DATE_MASK}
-                  guide={false}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  id={field.name}
-                  value={field.value}
-                />
-              )}
-            />
-            <span className="error">{errors.fabricattedAt?.message}</span>
-          </div>
-          <div className="field">
-            <label htmlFor="">Data de entrega estimada</label>
-            <Controller
-              control={control}
-              name={'deliveryDate'}
-              defaultValue=""
-              render={({ field }) => (
-                <MaskedInput
-                  placeholder="__/__/____"
-                  mask={DATE_MASK}
-                  guide={false}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  id={field.name}
-                  value={field.value}
-                />
-              )}
-            />
-            <span className="error">{errors.deliveryDate?.message}</span>
-          </div>
+          <DateInput fieldName="fabricattedAt" />
+          <DateInput fieldName="expiresAt" />
+          <DateInput fieldName="deliveryDate" />
           <button type="submit">calcular</button>
         </form>
         <div className="result">
           {expirationPercentage >= 0 && (
-            <p>
-              Na data de entrega {deliveryDate} o produto estará com{' '}
-              {expirationPercentage.toFixed(2)}% de validade restante
-            </p>
+            <>
+              <p>
+                Na data de entrega {deliveryDate} o produto estará com{' '}
+                {expirationPercentage.toFixed(2)}% de validade restante
+              </p>
+              <button onClick={clearData}>Novo cálculo</button>
+            </>
           )}
         </div>
       </div>
-    </>
+    </FormProvider>
   )
 }
 
