@@ -2,12 +2,13 @@ import { Controller, useFormContext } from 'react-hook-form'
 import MaskedInput from 'react-text-mask'
 
 interface Props {
+  label: string
   fieldName: string
 }
 
 const DATE_MASK = [/\d/, /\d/, '/', /\d/, /\d/, '/', /\d/, /\d/, /\d/, /\d/]
 
-export function DateInput({ fieldName }: Props) {
+export function DateInput({ fieldName, label }: Props) {
   const {
     control,
     formState: { errors },
@@ -17,7 +18,7 @@ export function DateInput({ fieldName }: Props) {
 
   return (
     <div className="field">
-      <label htmlFor={fieldName}>Data de Fabricação</label>
+      <label htmlFor={fieldName}>{label}</label>
       <Controller
         control={control}
         name={fieldName}

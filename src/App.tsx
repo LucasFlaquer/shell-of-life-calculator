@@ -79,9 +79,12 @@ function App() {
       <h1>Calculadora de validade de produtos</h1>
       <div className="container">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <DateInput fieldName="fabricattedAt" />
-          <DateInput fieldName="expiresAt" />
-          <DateInput fieldName="deliveryDate" />
+          <DateInput label="Data de fabricação" fieldName="fabricattedAt" />
+          <DateInput label="Data de validade" fieldName="expiresAt" />
+          <DateInput
+            label="Data de entrega estimada"
+            fieldName="deliveryDate"
+          />
           <button type="submit">calcular</button>
         </form>
         <div className="result">
